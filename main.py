@@ -17,8 +17,7 @@ if not os.path.exists(MODEL_PATH):
     gdown.download(url, MODEL_PATH, quiet=False)
 
 # -------------------- LOAD MODEL --------------------
-model = load_model(MODEL_PATH)
-
+model = load_model(MODEL_PATH, compile=False)
 # -------------------- CONSTANTS --------------------
 CLASS_LABELS = ['Pituitary', 'Glioma', 'No Tumor', 'Meningioma']
 
