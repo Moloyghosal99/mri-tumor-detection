@@ -3,7 +3,7 @@ from tensorflow.keras.models import load_model
 from keras.preprocessing.image import load_img, img_to_array
 import numpy as np
 import os
-import gdown   # 🔥 NEW
+import gdown
 
 # -------------------- APP SETUP --------------------
 app = Flask(__name__)
@@ -16,13 +16,12 @@ if not os.path.exists(MODEL_PATH):
     url = "https://drive.google.com/uc?id=1Vv63je3EneQDFe-o8LCLxd7jKpyxxMuR"
     gdown.download(url, MODEL_PATH, quiet=False)
 
-# Load trained model
+# -------------------- LOAD MODEL --------------------
 model = load_model(MODEL_PATH)
 
-# Class labels
+# -------------------- CONSTANTS --------------------
 CLASS_LABELS = ['Pituitary', 'Glioma', 'No Tumor', 'Meningioma']
 
-# Upload folder setup
 UPLOAD_FOLDER = 'uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -105,6 +104,5 @@ def uploaded_file(filename):
 
 # -------------------- RUN APP --------------------
 if __name__ == '__main__':
-    import os
-    port = int(os.environ.get("PORT", 5000))
+    port = int(os.environ.get("PORT", 10000))  # 🔥 IMPORTANT FOR RENDER
     app.run(host='0.0.0.0', port=port)
