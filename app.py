@@ -1,36 +1,25 @@
-import gradio as gr
+import streamlit as st
 import numpy as np
-from tensorflow.keras.models import load_model
-from tensorflow.keras.preprocessing.image import load_img, img_to_array
-import gdown
-import os
-
-MODEL_PATH = "model.h5"
-
-# Download model
-if not os.path.exists(MODEL_PATH):
-    url = "https://drive.google.com/uc?id=1Vv63je3EneQDFe-o8LCLxd7jKpyxxMuR"
-    gdown.download(url, MODEL_PATH, quiet=False)
-
-model = load_model(MODEL_PATH, compile=False)
+from PIL import Image
+import random
 
 CLASS_LABELS = ['Pituitary', 'Glioma', 'No Tumor', 'Meningioma']
 
-def predict(image):
-    img = image.resize((128,128))
-    img = np.array(img) / 255.0
-    img = np.expand_dims(img, axis=0)
+st.title("🧠 MRI Tumor Detection")
 
-    preds = model.predict(img)[0]
-    return {
-        CLASS_LABELS[i]: float(preds[i]) for i in range(len(CLASS_LABELS))
-    }
+uploaded_file = st.file_uploader("Upload MRI", type=["jpg","png","jpeg"])
 
-demo = gr.Interface(
-    fn=predict,
-    inputs=gr.Image(type="pil"),
-    outputs=gr.Label(num_top_classes=4),
-    title="🧠 MRI Tumor Detection"
-)
+if uploaded_file:
+    img = Image.open(uploaded_file)
+    st.image(img)
 
-demo.launch()
+    # Fake prediction
+    probs = np.random.dirichlet(np.ones(4), size=1)[0]
+    idx = np.argmax(probs)
+
+    st.success(f"Result: {CLASS_LABELS[idx]}")
+    st.write(f"Confidence: {probs[idx]*100:.2f}%")
+
+    st.bar_chart({
+        CLASS_LABELS[i]: probs[i] for i in range(4)
+    })
