@@ -3,12 +3,20 @@ from tensorflow.keras.models import load_model
 from keras.preprocessing.image import load_img, img_to_array
 import numpy as np
 import os
+import gdown   # 🔥 NEW
 
 # -------------------- APP SETUP --------------------
 app = Flask(__name__)
 
-# Load trained model
+# -------------------- DOWNLOAD MODEL --------------------
 MODEL_PATH = 'models/model.h5'
+
+if not os.path.exists(MODEL_PATH):
+    os.makedirs('models', exist_ok=True)
+    url = "https://drive.google.com/uc?id=1Vv63je3EneQDFe-o8LCLxd7jKpyxxMuR"
+    gdown.download(url, MODEL_PATH, quiet=False)
+
+# Load trained model
 model = load_model(MODEL_PATH)
 
 # Class labels
@@ -24,12 +32,10 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 def predict_tumor(image_path):
     IMAGE_SIZE = 128
 
-    # Load and preprocess image
     img = load_img(image_path, target_size=(IMAGE_SIZE, IMAGE_SIZE))
     img_array = img_to_array(img) / 255.0
     img_array = np.expand_dims(img_array, axis=0)
 
-    # Predict
     predictions = model.predict(img_array)
     probs = predictions[0]
 
@@ -37,7 +43,7 @@ def predict_tumor(image_path):
     confidence = float(probs[predicted_index])
     tumor_type = CLASS_LABELS[predicted_index]
 
-    # ---------------- RESULT LOGIC ----------------
+    # RESULT LOGIC
     if tumor_type == 'No Tumor':
         result = "No Tumor Detected"
         risk = "Low"
@@ -55,7 +61,7 @@ def predict_tumor(image_path):
             risk = "Low"
             advice = "Monitor symptoms and consult doctor if needed."
 
-    # ---------------- WARNING LOGIC ----------------
+    # WARNING LOGIC
     if confidence > 0.85:
         warning = "Prediction is highly confident, but not 100% medically reliable."
     elif confidence > 0.6:
@@ -99,4 +105,6 @@ def uploaded_file(filename):
 
 # -------------------- RUN APP --------------------
 if __name__ == '__main__':
-    app.run(debug=True)
+    import os
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port)
